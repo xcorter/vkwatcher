@@ -66,8 +66,10 @@ func (w *Watcher) scan(observable observable.Observable) {
 			return
 		}
 		lastScan := observable.LastScan
+		stopScan := false
 		for _, item := range result.Response.Items {
 			if observable.LastScan >= item.Date {
+				stopScan = true
 				break
 			}
 			if item.Date > lastScan {
@@ -82,7 +84,7 @@ func (w *Watcher) scan(observable observable.Observable) {
 		w.observableProvider.UpdateLastScan(observable)
 
 		offset = result.Response.NextFrom
-		if offset == "" {
+		if offset == "" || stopScan {
 			fmt.Println("stop scan")
 			return
 		}

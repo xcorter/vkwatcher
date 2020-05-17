@@ -24,7 +24,7 @@ func (m *Manager) Run(ctx context.Context) {
 				for _, ob := range data {
 					m.queue <- &ob
 				}
-				time.Sleep(1 * time.Minute)
+				time.Sleep(10 * time.Minute)
 			}
 		}
 	}()
