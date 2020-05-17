@@ -25,6 +25,7 @@ func (t *TelegramClient) SendMessage(
 		}
 	}
 
+	fmt.Println(observable.Owner + ":\n" + text)
 	msg := tgbotapi.NewMessage(observable.ChatId, text)
 
 	_, err := t.tgbotapi.Send(msg)
