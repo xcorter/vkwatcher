@@ -22,7 +22,7 @@ func (m *Manager) Run(ctx context.Context) {
 			default:
 				data := m.provider.GetData()
 				for _, ob := range data {
-					m.queue <- &ob
+					m.queue <- ob
 				}
 				time.Sleep(10 * time.Minute)
 			}
