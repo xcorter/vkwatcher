@@ -55,6 +55,16 @@ func (t *TelegramClient) getLink(item vkclient.Item) string {
 	return link
 }
 
+func (t *TelegramClient) SendRawMessage(chatId int64, text string) error {
+	msg := tgbotapi.NewMessage(chatId, text)
+
+	_, err := t.tgbotapi.Send(msg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (t *TelegramClient) GetUpdatesChan() (tgbotapi.UpdatesChannel, error) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60

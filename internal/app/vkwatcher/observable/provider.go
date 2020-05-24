@@ -23,6 +23,16 @@ func (p *Provider) Save(observable Observable) {
 	}
 }
 
+func (p *Provider) GetCountByChatId(chatId int64) int {
+	var count int
+	row := p.db.QueryRow("SELECT count(*) FROM observable where chat_id = ?", chatId)
+	err := row.Scan(&count)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return count
+}
+
 func (p *Provider) UpdateLastScan(observable Observable) {
 	_, e := p.db.Exec(
 		`UPDATE observable SET last_scan = ? WHERE owner = ? AND "value" = ?`,

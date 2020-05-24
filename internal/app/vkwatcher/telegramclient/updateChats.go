@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/observable"
+	"strings"
 )
 
 type ChatWatcher struct {
@@ -27,15 +28,42 @@ func (c *ChatWatcher) Watch(ctx context.Context) {
 				}
 
 				for update := range updates {
-					if update.Message == nil { // ignore any non-Message Updates
+					chatId := update.Message.Chat.ID
+					if update.Message.IsCommand() {
+						text := "Привет! Этот бот следит за исполнителем в вк и постит сюда треки, которые были " +
+							"запощены. Просто отправьте имя исполнителя и бот начнет слежку.\n Сканирование VK " +
+							"проходит с небольшими временными интервалами."
+						err := c.telegramClient.SendRawMessage(chatId, text)
+						if err != nil {
+							fmt.Println(err.Error())
+						}
+						continue
+					}
+
+					amountOfChats := c.provider.GetCountByChatId(chatId)
+					if amountOfChats > 1 {
+						text := "Достигнут предел испонителей"
+						err := c.telegramClient.SendRawMessage(chatId, text)
+						if err != nil {
+							fmt.Println(err.Error())
+						}
 						continue
 					}
 
 					username := update.Message.Chat.LastName + " " + update.Message.Chat.FirstName + "|" +
 						update.Message.Chat.UserName
-					ob := observable.NewMusicObservable(username, "qqqqqqqwwwwwwweeeeeerrrrrrrr", update.Message.Chat.ID)
+					artistName := strings.ToLower(update.Message.Text)
+					artistName = strings.TrimSpace(artistName)
+					ob := observable.NewMusicObservable(username, artistName, chatId)
 
 					c.provider.Save(ob)
+
+					successMessage := "Исполнитель " + artistName + " был успешно добавлен"
+					err := c.telegramClient.SendRawMessage(chatId, successMessage)
+					if err != nil {
+						fmt.Println(err.Error())
+					}
+					continue
 				}
 			}
 		}
