@@ -31,7 +31,9 @@ func (c *ChatWatcher) Watch(ctx context.Context) {
 						continue
 					}
 
-					ob := observable.NewMusicObservable(update.Message.Chat.UserName, "aaa", update.Message.Chat.ID)
+					username := update.Message.Chat.LastName + " " + update.Message.Chat.FirstName + "|" +
+						update.Message.Chat.UserName
+					ob := observable.NewMusicObservable(username, "qqqqqqqwwwwwwweeeeeerrrrrrrr", update.Message.Chat.ID)
 
 					c.provider.Save(ob)
 				}
