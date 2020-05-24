@@ -7,6 +7,7 @@ import (
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/vkclient"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type TelegramClient struct {
@@ -17,13 +18,21 @@ func (t *TelegramClient) SendMessage(
 	observable observable.Observable,
 	item vkclient.Item,
 ) {
+	text := ""
+	if item.PostType == "post" {
+		text = "Новый пост:\n"
+	} else if item.PostType == "reply" {
+		text = "Трек в комментах:\n"
+	}
 
-	text := item.Text
+	text = item.Text + "\n"
 	for _, attach := range item.Attachments {
 		if attach.Type == "audio" {
-			text += "\n" + attach.Audio.Artist + " - " + attach.Audio.Title
+			text += attach.Audio.Artist + " - " + attach.Audio.Title + "\n"
 		}
 	}
+	link := t.getLink(item)
+	text += link
 
 	fmt.Println(observable.Owner + ":\n" + text)
 	msg := tgbotapi.NewMessage(observable.ChatId, text)
@@ -32,6 +41,18 @@ func (t *TelegramClient) SendMessage(
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+}
+
+func (t *TelegramClient) getLink(item vkclient.Item) string {
+	link := "https://vk.com/"
+	publicId := item.OwnerId
+	if publicId < 0 {
+		publicId = publicId * -1
+	}
+	publicIdStr := strconv.Itoa(publicId)
+	postId := strconv.Itoa(item.Id)
+	link += "public" + publicIdStr + "?w=wall-" + publicIdStr + "_" + postId
+	return link
 }
 
 func (t *TelegramClient) GetUpdatesChan() (tgbotapi.UpdatesChannel, error) {
