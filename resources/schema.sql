@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS observable (
     value VARCHAR(255),
     type INT,
     last_scan INT,
-    chat_id VARCHAR(255)
+    chat_id VARCHAR(255),
+    is_active int default 0
 )

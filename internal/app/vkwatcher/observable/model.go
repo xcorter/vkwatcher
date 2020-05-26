@@ -10,6 +10,7 @@ type Observable struct {
 	Value    string
 	LastScan int
 	ChatId   int64
+	IsActive int
 }
 
 func NewMusicObservable(owner string, value string, chatId int64) Observable {
@@ -18,5 +19,6 @@ func NewMusicObservable(owner string, value string, chatId int64) Observable {
 		ObservableType: ObservableType{Value: 1},
 		Value:          value,
 		ChatId:         chatId,
+		IsActive: 		0,
 	}
 }

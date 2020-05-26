@@ -47,7 +47,7 @@ func (p *Provider) UpdateLastScan(observable Observable) {
 
 func (p *Provider) GetData() []*Observable {
 	var result []*Observable
-	rows, err := p.db.Query("SELECT * FROM observable WHERE chat_id IS NOT NULL")
+	rows, err := p.db.Query("SELECT * FROM observable WHERE chat_id IS NOT NULL AND is_active = 1")
 	if err != nil {
 		fmt.Println("Error")
 		return result
@@ -55,7 +55,7 @@ func (p *Provider) GetData() []*Observable {
 
 	for rows.Next() {
 		ob := &Observable{}
-		err := rows.Scan(&ob.Owner, &ob.Value, &ob.ObservableType.Value, &ob.LastScan, &ob.ChatId)
+		err := rows.Scan(&ob.Owner, &ob.Value, &ob.ObservableType.Value, &ob.LastScan, &ob.ChatId, &ob.IsActive)
 		if err != nil {
 			fmt.Println(err)
 			continue
