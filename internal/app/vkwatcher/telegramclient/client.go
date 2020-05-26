@@ -46,12 +46,10 @@ func (t *TelegramClient) SendMessage(
 func (t *TelegramClient) getLink(item vkclient.Item) string {
 	link := "https://vk.com/"
 	publicId := item.OwnerId
-	if publicId < 0 {
-		publicId = publicId * -1
-	}
 	publicIdStr := strconv.Itoa(publicId)
 	postId := strconv.Itoa(item.Id)
-	link += "public" + publicIdStr + "?w=wall-" + publicIdStr + "_" + postId
+	link += "wall" + publicIdStr + "_" + postId
+
 	return link
 }
 
