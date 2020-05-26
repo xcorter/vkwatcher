@@ -10,6 +10,7 @@ import (
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/telegramclient"
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/vkclient"
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/watcher"
+	. "io/ioutil"
 	"log"
 	"net/http"
 	url2 "net/url"
@@ -94,8 +95,11 @@ func getTelegramHTTPClient() *http.Client {
 func getDB() *sql.DB {
 	db, err := sql.Open("sqlite3", "./observable.db")
 	checkErr(err)
-	tableSql := "CREATE TABLE IF NOT EXISTS observable (owner VARCHAR(255), value VARCHAR(255), type INT, last_scan INT, chat_id VARCHAR(255))"
-	_, err = db.Exec(tableSql)
+
+	tableSql, err := ReadFile("./resources/schema.sql")
+	checkErr(err)
+
+	_, err = db.Exec(string(tableSql))
 	if err != nil {
 		panic(err)
 	}
