@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/xcorter/vkwatcher/internal/app/infrastructure/config"
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/observable"
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/telegramclient"
 	"github.com/xcorter/vkwatcher/internal/app/vkwatcher/vkclient"
@@ -26,15 +27,16 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	cfg := config.New()
 
 	client := &http.Client{}
 
-	db := getDB()
+	db := getDB(cfg)
 	provider := observable.NewProvider(db)
 	manager := observable.NewManager(provider)
 
-	vkclientapi := vkclient.NewClient(client, os.Getenv("VK_API_KEY"))
-	telegramClient := getTelegramClient()
+	vkclientapi := vkclient.NewClient(client, cfg.VkApiKey)
+	telegramClient := getTelegramClient(cfg)
 	w := watcher.NewWatcher(
 		manager,
 		provider,
@@ -59,24 +61,23 @@ func main() {
 	w.Start(ctx)
 }
 
-func getTelegramClient() *telegramclient.TelegramClient {
-	client := getTelegramHTTPClient()
+func getTelegramClient(cfg *config.Config) *telegramclient.TelegramClient {
+	client := getTelegramHTTPClient(cfg)
 
 	return telegramclient.NewClient(
-		os.Getenv("TELEGRAM_API_KEY"),
+		cfg.TelegramApiKey,
 		client,
 	)
 }
 
-func getTelegramHTTPClient() *http.Client {
+func getTelegramHTTPClient(cfg *config.Config) *http.Client {
 	//creating the proxyURL
-	proxyStr := os.Getenv("USE_PROXY")
-	if proxyStr == "" {
+	if cfg.UseProxy == "" {
 		return &http.Client{
 			//Timeout: 10 * time.Second,
 		}
 	}
-	proxyURL, err := url2.Parse(proxyStr)
+	proxyURL, err := url2.Parse(cfg.UseProxy)
 	if err != nil {
 		log.Println(err)
 	}
@@ -92,17 +93,20 @@ func getTelegramHTTPClient() *http.Client {
 	}
 }
 
-func getDB() *sql.DB {
+func getDB(cfg *config.Config) *sql.DB {
 	db, err := sql.Open("sqlite3", "./observable.db")
 	checkErr(err)
 
-	tableSql, err := ReadFile("./resources/schema.sql")
-	checkErr(err)
+	if cfg.Env == "dev" {
+		tableSql, err := ReadFile("./resources/schema.sql")
+		checkErr(err)
 
-	_, err = db.Exec(string(tableSql))
-	if err != nil {
-		panic(err)
+		_, err = db.Exec(string(tableSql))
+		if err != nil {
+			panic(err)
+		}
 	}
+	
 	return db
 }
 
